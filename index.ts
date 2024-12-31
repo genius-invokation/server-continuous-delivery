@@ -2,6 +2,7 @@ import { $ } from "bun";
 import { createHmac, randomBytes } from "node:crypto";
 import { existsSync } from "node:fs";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { limitFunction } from "p-limit";
 
 const WEBHOOK_PORT = process.env.WEBHOOK_PORT || "3000";
@@ -33,7 +34,7 @@ const SERVER_PACKAGE_PATH = path.join(REPOSITORY_PATH, "packages", "server");
 const DB_PATH = `/db`;
 
 const DOTENV_CONTENT = `
-DATABASE_URL="${DB_PATH}/dev.db"
+DATABASE_URL="${pathToFileURL(path.join(DB_PATH, "dev.db"))}"
 PORT=${APP_PORT}
 
 GH_CLIENT_ID=${GH_CLIENT_ID}
@@ -42,10 +43,11 @@ JWT_SECRET=${JWT_SECRET}
 `
 
 const setup = async () => {
-  if (!existsSync(REPOSITORY_PATH)) {
+  if (!existsSync(path.join(REPOSITORY_PATH, "package.json"))) {
     await $`git clone -b ${BRANCH_NAME} ${REPOSITORY_URL} ${REPOSITORY_PATH}`;
     await Bun.write(path.join(SERVER_PACKAGE_PATH, ".env"), DOTENV_CONTENT);
   }
+  await $`bunx pm2 ping`.cwd(SERVER_PACKAGE_PATH);
   await build();
   await start();
 };
@@ -82,7 +84,7 @@ await setup();
 const status = async () => {
   $.cwd(SERVER_PACKAGE_PATH);
   const output = await $`bun status`;
-  return output.stdout;
+  return output.stdout.toString("utf-8");
 }
 
 process.on("SIGINT", stop);
