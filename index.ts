@@ -10,6 +10,7 @@ const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || "";
 const APP_PORT = process.env.PORT || "4000";
 const GH_CLIENT_ID = process.env.GH_CLIENT_ID || "";
 const GH_CLIENT_SECRET = process.env.GH_CLIENT_SECRET || "";
+const IS_BETA = !!process.env.IS_BETA;
 
 const JWT_SECRET = process.env.JWT_SECRET || randomBytes(32).toString("hex");
 
@@ -22,10 +23,10 @@ const verifySignature = (header: string | null, body: string) => {
   return hash === signature;
 };
 
-const REPOSITORY_URL = process.env.IS_BETA
+const REPOSITORY_URL = IS_BETA
   ? `https://github.com/genius-invokation/genius-invokation-beta`
   : `https://github.com/genius-invokation/genius-invokation`;
-const BRANCH_NAME = process.env.IS_BETA ? `beta` : `main`;
+const BRANCH_NAME = IS_BETA ? `beta` : `main`;
 
 const REPOSITORY_PATH = `/app/gi-tcg`;
 const SERVER_PACKAGE_PATH = path.join(REPOSITORY_PATH, "packages", "server");
