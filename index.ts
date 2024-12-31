@@ -37,6 +37,9 @@ const DOTENV_CONTENT = `
 DATABASE_URL="${pathToFileURL(path.join(DB_PATH, "dev.db"))}"
 PORT=${APP_PORT}
 
+OUTPUT_PATH=${DB_PATH}/output.log
+ERROR_PATH=${DB_PATH}/error.log
+
 GH_CLIENT_ID=${GH_CLIENT_ID}
 GH_CLIENT_SECRET=${GH_CLIENT_SECRET}
 JWT_SECRET=${JWT_SECRET}
@@ -46,6 +49,8 @@ const setup = async () => {
   if (!existsSync(path.join(REPOSITORY_PATH, "package.json"))) {
     await $`git clone -b ${BRANCH_NAME} ${REPOSITORY_URL} ${REPOSITORY_PATH}`;
     await Bun.write(path.join(SERVER_PACKAGE_PATH, ".env"), DOTENV_CONTENT);
+  } else {
+    await $`git pull origin ${BRANCH_NAME}`.cwd(REPOSITORY_PATH);
   }
   await $`bunx pm2 ping`.cwd(SERVER_PACKAGE_PATH);
   await build();
@@ -73,8 +78,7 @@ const stop = async () => {
 
 // 禁止重入
 const update = limitFunction(async () => {
-  $.cwd(REPOSITORY_PATH);
-  await $`git pull origin ${BRANCH_NAME}`;
+  await $`git pull origin ${BRANCH_NAME}`.cwd(REPOSITORY_PATH);
   await build();
   await start();
 }, { concurrency: 1 });
@@ -82,9 +86,7 @@ const update = limitFunction(async () => {
 await setup();
 
 const status = async () => {
-  $.cwd(SERVER_PACKAGE_PATH);
-  const output = await $`bun status`;
-  return output.stdout.toString("utf-8");
+  return  await $`bun status`.cwd(SERVER_PACKAGE_PATH).text();
 }
 
 process.on("SIGINT", stop);
