@@ -20,11 +20,11 @@ Bun.serve({
       if (!verifySignature(signature, body)) {
         return new Response("Invalid signature", { status: 403 });
       }
-      const { payload } = JSON.parse(body);
+      const payload = JSON.parse(body);
       if (payload.ref !== `refs/heads/${payload.repository.default_branch}`) {
         return new Response("Not the default branch", { status: 200 });
       }
-
+      console.log(payload);
       return Response.json({ message: "Hello, world!" });
     }
 
