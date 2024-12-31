@@ -1,5 +1,6 @@
 FROM oven/bun:1
 WORKDIR /app
 RUN apt-get update && apt-get install -y git && apt-get clean
-COPY index.ts .
-ENTRYPOINT [ "bun", "run", "index.ts" ]
+COPY package.json bun.lockb index.ts ./
+RUN bun install
+CMD [ "bun", "run", "index.ts" ]
