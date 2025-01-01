@@ -46,7 +46,6 @@ const setup = async () => {
   } else {
     await $`git pull origin ${BRANCH_NAME}`.cwd(REPOSITORY_PATH);
   }
-  await $`bunx pm2 ping`.cwd(SERVER_PACKAGE_PATH);
   await build();
   await start();
 };
