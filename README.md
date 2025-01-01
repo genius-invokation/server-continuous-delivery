@@ -12,7 +12,8 @@ Below environment variable **MUST** be provided when launching the container:
 - `WEBHOOK_SECRET` that configured in the GitHub Webhook settings.
 
 Below environment variable could be used to configure the container's behavior:
-- `PORT` The server's running port, defaults to 4000
+- `PORT` The App server's running port, defaults to 4000
+- `WEB_CLINET_BASE_PATH` the "Base" path of the App, defaults to "/"
 - `WEBHOOK_PORT` The Webhook's listening port, defaults to 3000
-- `JWT_SECRET` A random string for encrypting JWT.
-
+- `JWT_SECRET` A random string for encrypting JWT
+- `UPDATED_NOTIFY_URL` on update send a POST to this URL
