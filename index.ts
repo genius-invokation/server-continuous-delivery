@@ -15,6 +15,8 @@ const IS_BETA = !!process.env.IS_BETA;
 
 const JWT_SECRET = process.env.JWT_SECRET || randomBytes(32).toString("hex");
 
+const UPDATED_NOTIFY_URL = process.env.UPDATED_NOTIFY_URL || "";
+
 const verifySignature = (header: string | null, body: string) => {
   if (!header) {
     return false;
@@ -60,7 +62,7 @@ const setup = async () => {
 const build = async () => {
   $.cwd(REPOSITORY_PATH);
   await $`bun install`;
-  await $`bun run build:prod`;
+  await $`bun run build -n web-client server`;
   $.cwd(SERVER_PACKAGE_PATH);
   await $`bunx prisma generate`;
   await $`bunx prisma migrate deploy`;
@@ -76,6 +78,11 @@ const stop = async () => {
   await $`bun run stop`.nothrow();
 }
 
+const status = async () => {
+  $.cwd(SERVER_PACKAGE_PATH);
+  return await $`bun status:detail`.text();
+}
+
 // 禁止重入
 const update = limitFunction(async () => {
   await $`git pull origin ${BRANCH_NAME}`.cwd(REPOSITORY_PATH);
@@ -83,11 +90,24 @@ const update = limitFunction(async () => {
   await start();
 }, { concurrency: 1 });
 
-await setup();
-
-const status = async () => {
-  return  await $`bun status`.cwd(SERVER_PACKAGE_PATH).text();
+const checkOnline = async () => {
+  await Bun.sleep(30 * 1000);
+  $.cwd(SERVER_PACKAGE_PATH);
+  const status = await $`bun status`.text();
+  const detail = await $`bun status:detail`.text();
+  console.log(`App status check: ${status}`);
+  if (UPDATED_NOTIFY_URL) {
+    await fetch(UPDATED_NOTIFY_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ status, detail }),
+    });
+  }
 }
+
+await setup();
 
 process.on("SIGINT", stop);
 process.on("SIGTERM", stop);
@@ -106,7 +126,7 @@ const server = Bun.serve({
       if (payload.ref !== `refs/heads/${payload.repository.default_branch}`) {
         return new Response("Not the default branch", { status: 200 });
       }
-      update();
+      update().then(checkOnline);
       return Response.json({ message: "OK" });
     }
     if (req.method === "GET" && path === "/") {
