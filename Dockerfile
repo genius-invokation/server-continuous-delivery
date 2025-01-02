@@ -1,4 +1,4 @@
-FROM oven/bun:alpine AS kawaii
+FROM oven/bun:alpine AS kawaii-bun
 
 FROM node:lts-alpine
 WORKDIR /app
