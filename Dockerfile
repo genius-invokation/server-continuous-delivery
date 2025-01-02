@@ -1,8 +1,7 @@
-FROM node:22
+FROM node:22-alpine
 WORKDIR /app
-RUN apt-get update && \
-  apt-get install -y git && \
-  apt-get clean && \
+RUN apk update && \
+  apk add --no-cache git && \
   npm install -g bun
 COPY package.json bun.lockb index.ts ./
 RUN bun install -p
