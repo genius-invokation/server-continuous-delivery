@@ -46,11 +46,17 @@ const setup = async () => {
     await $`git clone -b ${BRANCH_NAME} ${REPOSITORY_URL} ${REPOSITORY_PATH}`;
     await Bun.write(path.join(SERVER_PACKAGE_PATH, ".env"), DOTENV_CONTENT);
   } else {
-    await $`git pull origin ${BRANCH_NAME}`.cwd(REPOSITORY_PATH);
+    await sync();
   }
   await build();
   await start();
 };
+
+const sync = async () => {
+  $.cwd(REPOSITORY_PATH);
+  await $`git fetch origin ${BRANCH_NAME}`;
+  await $`git reset --hard origin/${BRANCH_NAME}`;
+}
 
 const build = async () => {
   $.cwd(REPOSITORY_PATH);
@@ -79,7 +85,7 @@ const status = async () => {
 // 禁止重入
 const update = limitFunction(
   async () => {
-    await $`git pull origin ${BRANCH_NAME}`.cwd(REPOSITORY_PATH);
+    await sync();
     await build();
     await start();
   },
