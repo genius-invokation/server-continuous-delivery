@@ -52,7 +52,7 @@ const setup = async () => {
 
 const build = async () => {
   $.cwd(REPOSITORY_PATH);
-  await $`bun install`;
+  await $`bun install --frozen-lockfile`;
   await $`bun run build -n web-client server`;
   $.cwd(SERVER_PACKAGE_PATH);
   await $`bunx prisma migrate deploy`;
