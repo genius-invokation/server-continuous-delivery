@@ -1,4 +1,4 @@
-FROM oven/bun:latest AS bun-builder
+FROM oven/bun:alpine AS bun-builder
 
 FROM node:lts-alpine
 WORKDIR /app
