@@ -6,6 +6,7 @@ WORKDIR /app
 RUN apk update && apk add --no-cache git openssl
 
 COPY --from=bun-builder /usr/local/bin/bun /usr/local/bin/bun
+COPY --from=bun-builder /usr/local/bin/bunx /usr/local/bin/bunx
 COPY package.json bun.lockb index.ts ./
 
 RUN bun install -p
