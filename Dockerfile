@@ -1,16 +1,15 @@
-FROM oven/bun:alpine AS bun-builder
+FROM oven/bun:alpine AS kawaii
 
 FROM node:lts-alpine
 WORKDIR /app
 
 RUN apk update && apk add --no-cache git openssl
 
-COPY --from=bun-builder /usr/local/bin/bun /usr/local/bin/bun
-COPY --from=bun-builder /usr/local/bin/bunx /usr/local/bin/bunx
-COPY package.json bun.lockb index.ts ./
+COPY --from=kawaii-bun /usr/local/bin/bun /usr/local/bin/bun
+RUN ln -s /usr/local/bin/bun /usr/local/bin/bunx
 
+COPY package.json bun.lockb index.ts ./
 RUN bun install -p
 
 ENV PORT=4000 WEBHOOK_PORT=3000
-
 ENTRYPOINT [ "bun", "run", "index.ts" ]
