@@ -37,6 +37,8 @@ DATABASE_URL="${pathToFileURL(path.join(DB_PATH, "dev.db"))}"
 
 OUTPUT_PATH=${DB_PATH}/output.log
 ERROR_PATH=${DB_PATH}/error.log
+
+JWT_SECRET="${JWT_SECRET}"
 `;
 
 const setup = async () => {
