@@ -37,7 +37,7 @@ DATABASE_URL="${pathToFileURL(path.join(DB_PATH, "dev.db"))}"
 
 OUTPUT_PATH=${DB_PATH}/output.log
 ERROR_PATH=${DB_PATH}/error.log
-`
+`;
 
 const setup = async () => {
   if (!existsSync(path.join(REPOSITORY_PATH, "package.json"))) {
@@ -56,30 +56,33 @@ const build = async () => {
   await $`bun run build -n web-client server`;
   $.cwd(SERVER_PACKAGE_PATH);
   await $`bunx prisma migrate deploy`;
-}
+};
 
 const start = async () => {
   $.cwd(SERVER_PACKAGE_PATH);
   await $`bun run start`;
-}
+};
 
 const stop = async () => {
   $.cwd(SERVER_PACKAGE_PATH);
   await $`bun run stop`.nothrow();
   process.exit();
-}
+};
 
 const status = async () => {
   $.cwd(SERVER_PACKAGE_PATH);
   return await $`bun status:detail`.text();
-}
+};
 
 // 禁止重入
-const update = limitFunction(async () => {
-  await $`git pull origin ${BRANCH_NAME}`.cwd(REPOSITORY_PATH);
-  await build();
-  await start();
-}, { concurrency: 1 });
+const update = limitFunction(
+  async () => {
+    await $`git pull origin ${BRANCH_NAME}`.cwd(REPOSITORY_PATH);
+    await build();
+    await start();
+  },
+  { concurrency: 1 },
+);
 
 const checkOnline = async () => {
   await Bun.sleep(30 * 1000);
@@ -88,15 +91,17 @@ const checkOnline = async () => {
   const detail = await $`bun status:detail`.text();
   console.log(`App status check: ${status}`);
   if (UPDATED_NOTIFY_URL) {
-    await fetch(UPDATED_NOTIFY_URL, {
+    fetch(UPDATED_NOTIFY_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ status, detail }),
+    }).catch(() => {
+      console.log(`Failed to notify ${UPDATED_NOTIFY_URL}`);
     });
   }
-}
+};
 
 await setup();
 
@@ -117,7 +122,9 @@ const server = Bun.serve({
       if (payload.ref !== `refs/heads/${payload.repository.default_branch}`) {
         return new Response("Not the default branch", { status: 200 });
       }
-      update().finally(checkOnline);
+      update()
+        .finally(checkOnline)
+        .catch(() => {});
       return Response.json({ message: "OK" });
     }
     if (req.method === "GET" && path === "/") {
