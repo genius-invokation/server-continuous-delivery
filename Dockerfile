@@ -1,6 +1,6 @@
 FROM oven/bun:alpine AS kawaii-bun
 WORKDIR /bundle
-COPY package.json bun.lock index.ts /bundle
+COPY package.json bun.lock index.ts /bundle/
 RUN bun install --frozen-lockfile --production && bun build --target=bun --outfile index.js index.ts
 
 FROM oven/bun:alpine

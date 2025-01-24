@@ -68,7 +68,7 @@ const build = async () => {
 
 const start = async () => {
   $.cwd(SERVER_PACKAGE_PATH);
-  await $`bun run start`;
+  await $`bun run pm2 ping`;
   await $`bun run start`;
 };
 
