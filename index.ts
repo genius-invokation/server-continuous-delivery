@@ -98,6 +98,7 @@ const checkOnline = async () => {
   $.cwd(SERVER_PACKAGE_PATH);
   const status = await $`bun status`.text();
   const detail = await $`bun status:detail`.text();
+  const gitLog = await $`git log -1`.text();
   console.log(`App status check: ${status}`);
   if (UPDATED_NOTIFY_URL) {
     fetch(UPDATED_NOTIFY_URL, {
@@ -105,7 +106,12 @@ const checkOnline = async () => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ status, detail }),
+      body: JSON.stringify({
+        status,
+        detail,
+        gitLog,
+        env: { IS_BETA },
+      }),
     }).catch(() => {
       console.log(`Failed to notify ${UPDATED_NOTIFY_URL}`);
     });
