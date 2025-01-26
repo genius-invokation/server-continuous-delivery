@@ -50,13 +50,14 @@ const setup = async () => {
   }
   await build();
   await start();
+  await checkOnline(true);
 };
 
 const sync = async () => {
   $.cwd(REPOSITORY_PATH);
   await $`git fetch origin ${BRANCH_NAME}`;
   await $`git reset --hard origin/${BRANCH_NAME}`;
-}
+};
 
 const build = async () => {
   $.cwd(REPOSITORY_PATH);
@@ -90,15 +91,15 @@ const update = limitFunction(
     await build();
     await start();
   },
-  { concurrency: 1 },
+  { concurrency: 1 }
 );
 
-const checkOnline = async () => {
+const checkOnline = async (firstTime: boolean = false) => {
   await Bun.sleep(30 * 1000);
   $.cwd(SERVER_PACKAGE_PATH);
-  const status = await $`bun status`.text();
-  const detail = await $`bun status:detail`.text();
-  const gitLog = await $`git log -1`.text();
+  const status = (await $`bun status`.text()).trim();
+  const detail = (await $`bun status:detail`.text()).trim();
+  const gitLog = await $`git log -1 --pretty=format:"%h - %an, %ad : %s" --date=format:"%Y-%m-%d %H:%M:%S"`.text();
   console.log(`App status check: ${status}`);
   if (UPDATED_NOTIFY_URL) {
     fetch(UPDATED_NOTIFY_URL, {
@@ -109,7 +110,7 @@ const checkOnline = async () => {
       body: JSON.stringify({
         status,
         detail,
-        gitLog,
+        gitLog: firstTime ? "(First Time Up)\n" + gitLog : gitLog,
         env: { IS_BETA },
       }),
     }).catch(() => {
