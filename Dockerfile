@@ -7,7 +7,7 @@ FROM oven/bun:alpine
 WORKDIR /app
 
 COPY --from=kawaii-bun /bundle/index.js /app/index.js
-RUN apk update && apk add --no-cache git openssl
+RUN apk update && apk add --no-cache git openssl curl && curl -sS https://webi.sh/gh | sh
 
 ENV PORT=4000 WEBHOOK_PORT=3000
 ENTRYPOINT [ "bun", "run", "index.js" ]
