@@ -43,7 +43,7 @@ JWT_SECRET="${JWT_SECRET}"
 
 const setup = async () => {
   if (!existsSync(path.join(REPOSITORY_PATH, "package.json"))) {
-    await $`git clone -b ${BRANCH_NAME} ${REPOSITORY_URL} ${REPOSITORY_PATH}`;
+    await $`gh repo clone ${REPOSITORY_URL} ${REPOSITORY_PATH}`;
     await Bun.write(path.join(SERVER_PACKAGE_PATH, ".env"), DOTENV_CONTENT);
   } else {
     await sync();
@@ -55,8 +55,7 @@ const setup = async () => {
 
 const sync = async () => {
   $.cwd(REPOSITORY_PATH);
-  await $`git fetch origin ${BRANCH_NAME}`;
-  await $`git reset --hard origin/${BRANCH_NAME}`;
+  await $`gh repo sync --force`;
 };
 
 const build = async () => {
