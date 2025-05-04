@@ -75,8 +75,12 @@ const start = async () => {
 const stop = async () => {
   $.cwd(SERVER_PACKAGE_PATH);
   await $`bun run stop`.nothrow();
-  process.exit();
 };
+
+const terminate = async () => {
+  await stop(); 
+  process.exit();
+}
 
 const status = async () => {
   $.cwd(SERVER_PACKAGE_PATH);
@@ -87,6 +91,7 @@ const status = async () => {
 const update = limitFunction(
   async () => {
     await sync();
+    await stop();
     await build();
     await start();
   },
@@ -120,9 +125,9 @@ const checkOnline = async (firstTime: boolean = false) => {
 
 await setup();
 
-process.on("SIGINT", stop);
-process.on("SIGTERM", stop);
-process.on("SIGQUIT", stop);
+process.on("SIGINT", terminate);
+process.on("SIGTERM", terminate);
+process.on("SIGQUIT", terminate);
 
 const server = Bun.serve({
   fetch: async (req) => {
