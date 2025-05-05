@@ -55,6 +55,7 @@ const setup = async () => {
 
 const sync = async () => {
   $.cwd(REPOSITORY_PATH);
+  await $`git reset --hard HEAD`;
   await $`gh repo sync --force`;
 };
 
